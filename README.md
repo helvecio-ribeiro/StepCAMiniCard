@@ -59,6 +59,7 @@ Also adjust these environment variables if needed:
 - `STEPCA_SERVICE`
 - `STEPCA_CONFIG`
 - `ROOT_CERT`
+- `CHROMIUM_PROFILE_DIR`
 - `DOCROOT`
 
 Then enable and start:
@@ -85,6 +86,26 @@ Override those in the systemd unit if your install differs.
 sudo systemctl status stepca-kiosk
 sudo systemctl restart stepca-kiosk
 sudo journalctl -u stepca-kiosk -f --no-pager
+```
+
+If Chromium fails with a profile lock error, this project already supports an isolated kiosk profile:
+
+```bash
+sudo systemctl edit stepca-kiosk
+```
+
+Then set or confirm:
+
+```ini
+[Service]
+Environment=CHROMIUM_PROFILE_DIR=/opt/stepca-kiosk/chromium-profile
+```
+
+Apply it with:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart stepca-kiosk
 ```
 
 ## Uninstall

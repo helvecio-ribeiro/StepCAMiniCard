@@ -15,6 +15,7 @@ Environment=STEPCA_SERVICE=step-ca
 Environment=STEPCA_CONFIG=/home/admin/.step/config/ca.json
 Environment=ROOT_CERT=/home/admin/.step/certs/root_ca.crt
 Environment=ISSUED_DIR=/home/admin/issued
+Environment=CHROMIUM_PROFILE_DIR=/opt/stepca-kiosk/chromium-profile
 Environment=DISPLAY=:0
 Environment=XAUTHORITY=/home/admin/.Xauthority
 ExecStart=/opt/stepca-kiosk/stepca-kiosk.sh

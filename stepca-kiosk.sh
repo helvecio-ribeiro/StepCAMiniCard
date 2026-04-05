@@ -10,6 +10,7 @@ STEPCA_CONFIG="${STEPCA_CONFIG:-/home/admin/.step/config/ca.json}"
 ROOT_CERT="${ROOT_CERT:-/home/admin/.step/certs/root_ca.crt}"
 ISSUED_DIR="${ISSUED_DIR:-/home/admin/issued}"
 POLL_SECONDS="${POLL_SECONDS:-2}"
+CHROMIUM_PROFILE_DIR="${CHROMIUM_PROFILE_DIR:-${DOCROOT}/chromium-profile}"
 
 json_escape() {
   local value="${1:-}"
@@ -126,6 +127,7 @@ if command -v xset >/dev/null 2>&1; then
 fi
 
 mkdir -p "${DOCROOT}"
+mkdir -p "${CHROMIUM_PROFILE_DIR}"
 write_status || true
 
 cd "${DOCROOT}"
@@ -146,11 +148,14 @@ sleep 0.3
 /usr/lib/chromium/chromium \
   --kiosk \
   --incognito \
+  --no-first-run \
+  --no-default-browser-check \
   --noerrdialogs \
   --disable-infobars \
   --overscroll-history-navigation=0 \
   --disable-gpu \
   --disable-gpu-compositing \
   --use-gl=swiftshader \
+  --user-data-dir="${CHROMIUM_PROFILE_DIR}" \
   "${URL}" &
 wait $!
