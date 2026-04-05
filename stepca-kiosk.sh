@@ -23,9 +23,9 @@ json_escape() {
 }
 
 write_status() {
-  local host_ip port service_active service_name health_ok latency_ms listener_open
+  local host_ip service_active health_ok latency_ms
   local stepca_version root_subject root_not_after tmp health_path
-  local issued_count latest_issued_name latest_issued_at latest_key
+  local issued_count
 
   host_ip="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '/src/ {for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}' || true)"
   if [[ -z "${host_ip}" ]]; then
@@ -33,11 +33,6 @@ write_status() {
   fi
   host_ip="${host_ip:-unknown}"
   printf '%s\n' "${host_ip}" > "${DOCROOT}/ip.txt"
-
-  port="$(printf '%s\n' "${CA_URL}" | sed -E 's#^[a-z]+://[^:/]+:([0-9]+).*$#\1#')"
-  if [[ "${port}" == "${CA_URL}" ]]; then
-    port="8443"
-  fi
 
   service_active=false
   if systemctl is-active --quiet "${STEPCA_SERVICE}" 2>/dev/null; then
@@ -53,11 +48,6 @@ write_status() {
       health_ok=true
     fi
     latency_ms="$(printf '%s\n' "${tmp##* }" | awk '{printf "%.0fms", $1 * 1000}')"
-  fi
-
-  listener_open=false
-  if ss -lnt 2>/dev/null | awk '{print $4}' | grep -Eq "(^|:)${port}$"; then
-    listener_open=true
   fi
 
   stepca_version="$(
@@ -78,16 +68,8 @@ write_status() {
   fi
 
   issued_count="0"
-  latest_issued_name=""
-  latest_issued_at=""
-  latest_key=""
   if [[ -d "${ISSUED_DIR}" ]]; then
     issued_count="$(find "${ISSUED_DIR}" -maxdepth 1 -type f -name '*.key' | wc -l | awk '{print $1}')"
-    latest_key="$(find "${ISSUED_DIR}" -maxdepth 1 -type f -name '*.key' -print0 2>/dev/null | xargs -0 ls -1t 2>/dev/null | head -n 1 || true)"
-    if [[ -n "${latest_key}" ]]; then
-      latest_issued_name="$(basename "${latest_key}" .key)"
-      latest_issued_at="$(date -r "${latest_key}" '+%Y-%m-%d %H:%M' 2>/dev/null || true)"
-    fi
   fi
 
   cat > "${DOCROOT}/status.json.tmp" <<EOF
@@ -96,14 +78,10 @@ write_status() {
   "service_name": "$(json_escape "${STEPCA_SERVICE}")",
   "service_active": ${service_active},
   "ca_url": "$(json_escape "${CA_URL}")",
-  "port": "$(json_escape "${port}")",
   "health_ok": ${health_ok},
   "health_latency_ms": "$(json_escape "${latency_ms}")",
-  "listener_open": ${listener_open},
   "stepca_version": "$(json_escape "${stepca_version}")",
   "issued_count": "$(json_escape "${issued_count}")",
-  "latest_issued_name": "$(json_escape "${latest_issued_name}")",
-  "latest_issued_at": "$(json_escape "${latest_issued_at}")",
   "config_path": "$(json_escape "${STEPCA_CONFIG}")",
   "root_cert_path": "$(json_escape "${ROOT_CERT}")",
   "root_subject": "$(json_escape "${root_subject}")",

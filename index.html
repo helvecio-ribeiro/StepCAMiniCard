@@ -50,7 +50,7 @@
       }
 
       header {
-        padding: 12px 14px 10px;
+        padding: 10px 12px 9px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -61,14 +61,14 @@
 
       h1 {
         margin: 0;
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 650;
         letter-spacing: -0.01em;
       }
 
       .sub {
         margin-top: 3px;
-        font-size: 11px;
+        font-size: 10px;
         color: var(--muted);
         font-weight: 520;
       }
@@ -95,15 +95,15 @@
       }
 
       main {
-        padding: 12px 14px 14px;
+        padding: 10px 12px 12px;
         display: grid;
-        gap: 10px;
+        gap: 8px;
       }
 
       .grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 8px;
       }
 
       .card,
@@ -114,33 +114,33 @@
       }
 
       .card {
-        padding: 10px;
-        min-height: 76px;
+        padding: 9px;
+        min-height: 68px;
+        display: grid;
+        gap: 5px;
+      }
+
+      .wide {
+        padding: 9px;
         display: grid;
         gap: 6px;
       }
 
-      .wide {
-        padding: 10px;
-        display: grid;
-        gap: 8px;
-      }
-
       .k {
-        font-size: 11px;
+        font-size: 10px;
         color: var(--muted);
         font-weight: 560;
       }
 
       .v {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 700;
         letter-spacing: -0.03em;
         line-height: 1;
       }
 
       .mini {
-        font-size: 11px;
+        font-size: 10px;
         color: var(--muted2);
         font-weight: 520;
       }
@@ -153,21 +153,21 @@
       }
 
       .label {
-        max-width: 56%;
+        max-width: 52%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 11px;
+        font-size: 10px;
         color: var(--muted);
         font-weight: 560;
       }
 
       .value {
-        max-width: 44%;
+        max-width: 48%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 650;
         color: rgba(255, 255, 255, 0.88);
       }
@@ -189,7 +189,7 @@
       }
 
       footer {
-        padding: 10px 14px 12px;
+        padding: 8px 12px 10px;
         border-top: 1px solid var(--line);
         display: flex;
         justify-content: space-between;
@@ -204,7 +204,7 @@
     <div class="app" role="application" aria-label="step-ca kiosk">
       <header>
         <div>
-          <h1>step-ca Health - <span id="hostIp">-</span></h1>
+          <h1>step-ca • <span id="hostIp">-</span></h1>
           <div class="sub">Mini card • updates every <span id="pollMs">2000</span>ms</div>
         </div>
         <div class="status" title="Current CA state">
@@ -226,11 +226,6 @@
             <div class="mini">Latency <span id="latencyMs">—</span></div>
           </div>
           <div class="card">
-            <div class="k">Port</div>
-            <div class="v" id="caPort">—</div>
-            <div class="mini" id="listenerState">Listener —</div>
-          </div>
-          <div class="card">
             <div class="k">Version</div>
             <div class="v" id="versionText">—</div>
             <div class="mini">CA binary</div>
@@ -240,25 +235,12 @@
             <div class="v" id="issuedCount">—</div>
             <div class="mini">Leaf keys found</div>
           </div>
-          <div class="card">
-            <div class="k">Latest</div>
-            <div class="v" id="latestIssued">—</div>
-            <div class="mini" id="latestIssuedAt">—</div>
-          </div>
         </div>
 
         <div class="wide">
           <div class="row">
             <div class="label">CA URL</div>
             <div class="value accent" id="caUrl">—</div>
-          </div>
-          <div class="row">
-            <div class="label">Config</div>
-            <div class="value" id="configPath">—</div>
-          </div>
-          <div class="row">
-            <div class="label">Root certificate</div>
-            <div class="value" id="rootCertPath">—</div>
           </div>
           <div class="row">
             <div class="label">Root subject</div>
@@ -308,7 +290,6 @@
       function render(json) {
         const serviceActive = json.service_active === true;
         const healthOk = json.health_ok === true;
-        const listenerOpen = json.listener_open === true;
 
         $("hostIp").textContent = text(json.host_ip);
         $("serviceState").textContent = serviceActive ? "ACTIVE" : "DOWN";
@@ -321,23 +302,15 @@
         }`;
         $("latencyMs").textContent = text(json.health_latency_ms, "—");
 
-        $("caPort").textContent = text(json.port);
-        $("listenerState").textContent = `Listener ${listenerOpen ? "open" : "closed"}`;
-        $("listenerState").className = `mini ${listenerOpen ? "ok" : "bad"}`;
-
         $("versionText").textContent = text(json.stepca_version, "missing");
         $("issuedCount").textContent = text(json.issued_count, "0");
-        $("latestIssued").textContent = text(json.latest_issued_name, "none");
-        $("latestIssuedAt").textContent = text(json.latest_issued_at, "—");
         $("caUrl").textContent = text(json.ca_url);
-        $("configPath").textContent = text(json.config_path);
-        $("rootCertPath").textContent = text(json.root_cert_path);
         $("rootSubject").textContent = text(json.root_subject);
         $("rootNotAfter").textContent = text(json.root_not_after);
 
         if (serviceActive && healthOk) {
           setStatus("ok", "Healthy");
-        } else if (serviceActive || listenerOpen) {
+        } else if (serviceActive) {
           setStatus("warn", "Partial");
         } else {
           setStatus("bad", "Unhealthy");
