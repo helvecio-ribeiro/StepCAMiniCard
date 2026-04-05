@@ -1,0 +1,25 @@
+[Unit]
+Description=step-ca Kiosk Dashboard (Chromium + local webserver)
+After=network-online.target graphical.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=admin
+Group=admin
+Environment=PORT=8089
+Environment=DOCROOT=/opt/stepca-kiosk
+Environment=URL=http://127.0.0.1:8089/
+Environment=CA_URL=https://127.0.0.1:8443
+Environment=STEPCA_SERVICE=step-ca
+Environment=STEPCA_CONFIG=/home/admin/.step/config/ca.json
+Environment=ROOT_CERT=/home/admin/.step/certs/root_ca.crt
+Environment=ISSUED_DIR=/home/admin/issued
+Environment=DISPLAY=:0
+Environment=XAUTHORITY=/home/admin/.Xauthority
+ExecStart=/opt/stepca-kiosk/stepca-kiosk.sh
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical.target

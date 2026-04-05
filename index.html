@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>step-ca Kiosk Health Card</title>
+    <style>
+      :root {
+        --bg: #09111b;
+        --panel: rgba(255, 255, 255, 0.06);
+        --line: rgba(255, 255, 255, 0.1);
+        --text: rgba(255, 255, 255, 0.94);
+        --muted: rgba(255, 255, 255, 0.64);
+        --muted2: rgba(255, 255, 255, 0.42);
+        --ok: #4ade80;
+        --warn: #f59e0b;
+        --bad: #fb7185;
+        --accent: #38bdf8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        padding: 14px;
+        display: grid;
+        place-items: center;
+        color: var(--text);
+        background:
+          radial-gradient(900px 620px at 18% 10%, rgba(56, 189, 248, 0.12), transparent 60%),
+          radial-gradient(700px 540px at 82% 14%, rgba(74, 222, 128, 0.09), transparent 60%),
+          linear-gradient(180deg, #08101a, #09111b 40%, #050a12);
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      }
+
+      .app {
+        width: min(420px, 100vw);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      }
+
+      header {
+        padding: 12px 14px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.12);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+
+      .sub {
+        margin-top: 3px;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 520;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 11px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--bad);
+        box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.18);
+      }
+
+      main {
+        padding: 12px 14px 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      .card,
+      .wide {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 14px;
+      }
+
+      .card {
+        padding: 10px;
+        min-height: 76px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .wide {
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .k {
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 560;
+      }
+
+      .v {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1;
+      }
+
+      .mini {
+        font-size: 11px;
+        color: var(--muted2);
+        font-weight: 520;
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .label {
+        max-width: 56%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 560;
+      }
+
+      .value {
+        max-width: 44%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: 650;
+        color: rgba(255, 255, 255, 0.88);
+      }
+
+      .accent {
+        color: var(--accent);
+      }
+
+      .ok {
+        color: var(--ok);
+      }
+
+      .warn {
+        color: var(--warn);
+      }
+
+      .bad {
+        color: var(--bad);
+      }
+
+      footer {
+        padding: 10px 14px 12px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted2);
+        font-size: 10px;
+        background: rgba(0, 0, 0, 0.12);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app" role="application" aria-label="step-ca kiosk">
+      <header>
+        <div>
+          <h1>step-ca Health - <span id="hostIp">-</span></h1>
+          <div class="sub">Mini card • updates every <span id="pollMs">2000</span>ms</div>
+        </div>
+        <div class="status" title="Current CA state">
+          <span class="dot" id="statusDot"></span>
+          <span id="statusText">Connecting…</span>
+        </div>
+      </header>
+
+      <main>
+        <div class="grid">
+          <div class="card">
+            <div class="k">Systemd</div>
+            <div class="v" id="serviceState">—</div>
+            <div class="mini" id="serviceName">step-ca</div>
+          </div>
+          <div class="card">
+            <div class="k">Health</div>
+            <div class="v" id="healthState">—</div>
+            <div class="mini">Latency <span id="latencyMs">—</span></div>
+          </div>
+          <div class="card">
+            <div class="k">Port</div>
+            <div class="v" id="caPort">—</div>
+            <div class="mini" id="listenerState">Listener —</div>
+          </div>
+          <div class="card">
+            <div class="k">Version</div>
+            <div class="v" id="versionText">—</div>
+            <div class="mini">CA binary</div>
+          </div>
+          <div class="card">
+            <div class="k">Issued</div>
+            <div class="v" id="issuedCount">—</div>
+            <div class="mini">Leaf keys found</div>
+          </div>
+          <div class="card">
+            <div class="k">Latest</div>
+            <div class="v" id="latestIssued">—</div>
+            <div class="mini" id="latestIssuedAt">—</div>
+          </div>
+        </div>
+
+        <div class="wide">
+          <div class="row">
+            <div class="label">CA URL</div>
+            <div class="value accent" id="caUrl">—</div>
+          </div>
+          <div class="row">
+            <div class="label">Config</div>
+            <div class="value" id="configPath">—</div>
+          </div>
+          <div class="row">
+            <div class="label">Root certificate</div>
+            <div class="value" id="rootCertPath">—</div>
+          </div>
+          <div class="row">
+            <div class="label">Root subject</div>
+            <div class="value" id="rootSubject">—</div>
+          </div>
+          <div class="row">
+            <div class="label">Root expires</div>
+            <div class="value" id="rootNotAfter">—</div>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <div>Local PKI dashboard • kiosk mode</div>
+        <div id="lastUpdate">Last update: —</div>
+      </footer>
+    </div>
+
+    <script>
+      const POLL_MS = 2000;
+      const $ = (id) => document.getElementById(id);
+      $("pollMs").textContent = String(POLL_MS);
+
+      function setStatus(kind, msg) {
+        const dot = $("statusDot");
+        const palette =
+          kind === "ok"
+            ? ["var(--ok)", "0 0 0 3px rgba(74,222,128,.18)"]
+            : kind === "warn"
+              ? ["var(--warn)", "0 0 0 3px rgba(245,158,11,.18)"]
+              : ["var(--bad)", "0 0 0 3px rgba(251,113,133,.18)"];
+        dot.style.background = palette[0];
+        dot.style.boxShadow = palette[1];
+        $("statusText").textContent = msg;
+      }
+
+      function text(v, fallback = "—") {
+        return v === undefined || v === null || v === "" ? fallback : String(v);
+      }
+
+      function classify(okValue, pendingValue = "—") {
+        if (okValue === true) return "OK";
+        if (okValue === false) return "FAIL";
+        return pendingValue;
+      }
+
+      function render(json) {
+        const serviceActive = json.service_active === true;
+        const healthOk = json.health_ok === true;
+        const listenerOpen = json.listener_open === true;
+
+        $("hostIp").textContent = text(json.host_ip);
+        $("serviceState").textContent = serviceActive ? "ACTIVE" : "DOWN";
+        $("serviceState").className = `v ${serviceActive ? "ok" : "bad"}`;
+        $("serviceName").textContent = text(json.service_name, "step-ca");
+
+        $("healthState").textContent = classify(json.health_ok, "WAIT");
+        $("healthState").className = `v ${
+          healthOk ? "ok" : json.health_ok === false ? "bad" : "warn"
+        }`;
+        $("latencyMs").textContent = text(json.health_latency_ms, "—");
+
+        $("caPort").textContent = text(json.port);
+        $("listenerState").textContent = `Listener ${listenerOpen ? "open" : "closed"}`;
+        $("listenerState").className = `mini ${listenerOpen ? "ok" : "bad"}`;
+
+        $("versionText").textContent = text(json.stepca_version, "missing");
+        $("issuedCount").textContent = text(json.issued_count, "0");
+        $("latestIssued").textContent = text(json.latest_issued_name, "none");
+        $("latestIssuedAt").textContent = text(json.latest_issued_at, "—");
+        $("caUrl").textContent = text(json.ca_url);
+        $("configPath").textContent = text(json.config_path);
+        $("rootCertPath").textContent = text(json.root_cert_path);
+        $("rootSubject").textContent = text(json.root_subject);
+        $("rootNotAfter").textContent = text(json.root_not_after);
+
+        if (serviceActive && healthOk) {
+          setStatus("ok", "Healthy");
+        } else if (serviceActive || listenerOpen) {
+          setStatus("warn", "Partial");
+        } else {
+          setStatus("bad", "Unhealthy");
+        }
+
+        $("lastUpdate").textContent = "Last update: " + new Date().toLocaleTimeString();
+      }
+
+      async function tick() {
+        const response = await fetch("/status.json", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        render(data);
+      }
+
+      async function bootstrap() {
+        try {
+          await tick();
+          setInterval(async () => {
+            try {
+              await tick();
+            } catch (error) {
+              console.log(error);
+              setStatus("bad", "Read error");
+              $("lastUpdate").textContent = "Last update: read error";
+            }
+          }, POLL_MS);
+        } catch (error) {
+          console.log(error);
+          setStatus("bad", "Bootstrap error");
+          $("lastUpdate").textContent = "Last update: bootstrap error";
+        }
+      }
+
+      bootstrap();
+    </script>
+  </body>
+</html>
