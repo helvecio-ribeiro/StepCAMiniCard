@@ -225,16 +225,6 @@
             <div class="v" id="healthState">—</div>
             <div class="mini">Latency <span id="latencyMs">—</span></div>
           </div>
-          <div class="card">
-            <div class="k">Version</div>
-            <div class="v" id="versionText">—</div>
-            <div class="mini">CA binary</div>
-          </div>
-          <div class="card">
-            <div class="k">Issued</div>
-            <div class="v" id="issuedCount">—</div>
-            <div class="mini">Leaf keys found</div>
-          </div>
         </div>
 
         <div class="wide">
@@ -249,6 +239,14 @@
           <div class="row">
             <div class="label">Root expires</div>
             <div class="value" id="rootNotAfter">—</div>
+          </div>
+          <div class="row">
+            <div class="label">Version</div>
+            <div class="value" id="versionText">—</div>
+          </div>
+          <div class="row">
+            <div class="label">Issued</div>
+            <div class="value"><span id="issuedCount">0</span> cert(s) issued</div>
           </div>
         </div>
       </main>
